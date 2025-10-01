@@ -84,38 +84,43 @@ li:hover {transform:translateY(-3px);box-shadow:0 4px 8px rgba(0,0,0,0.4);}
     }
 /* FOR MOBILE */
 @media (max-width: 480px) {
-  .table {
-    width: 90vw; 
+  body {
     height: auto;
-    border: 6vw solid #5c3d2e;
-    border-radius: 6vw;
-    padding: 4vw;
+    padding: 10px;
+  }
+
+  .table {
+    width: 320px;      /* bigger than 90vw on some phones */
+    height: auto;
+    border: 16px solid #5c3d2e;
+    border-radius: 20px;
+    padding: 12px;
   }
 
   h1 {
-    font-size: 8vw;  
+    font-size: 24px;   /* bigger and readable */
   }
 
   .ball {
-    width: 10vw;        
-    height: 10vw;
-    font-size: 5vw;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
   }
 
   .todo-input input {
-    font-size: 4vw;
-    padding: 3vw;
+    font-size: 16px;
+    padding: 8px;
   }
 
   .todo-input button {
-    font-size: 4vw;
-    padding: 3vw;
+    font-size: 16px;
+    padding: 8px;
   }
 
   .note-preview {
-    font-size: 3.5vw;
-    margin-left: 12vw;
-    margin-top: 2vw;
+    font-size: 14px;
+    margin-left: 40px;
+    margin-top: 4px;
   }
 }
 </style>
