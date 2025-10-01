@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Levi's To-Do List</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<style>
+body {
+  margin:0; height:100vh; display:flex; justify-content:center; align-items:center;
+  font-family:'Bungee', cursive; color:white;
+  background:radial-gradient(circle,#2f4f2f 10%,#1a2a1a 100%);
+  position:relative;
+}
+body::before {
+  content:""; position:absolute; inset:0;
+  background-image: repeating-linear-gradient(
+    45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px,
+    transparent 2px, transparent 10px
+  ); pointer-events:none;
+}
+.table {
+  background:#116530; border:20px solid #5c3d2e; border-radius:20px;
+  width:500px; height:600px; position:relative;
+  box-shadow:0 0 30px rgba(0,0,0,0.6); display:flex; flex-direction:column; padding:15px; overflow:hidden;
+}
+.pocket { position:absolute; width:40px;height:40px;background:black;border-radius:50%; }
+.pocket.tl{top:-20px;left:-20px;} .pocket.tr{top:-20px;right:-20px;}
+.pocket.bl{bottom:-20px;left:-20px;} .pocket.br{bottom:-20px;right:-20px;}
+.pocket.ml{top:50%;left:-20px;transform:translateY(-50%);} .pocket.mr{top:50%;right:-20px;transform:translateY(-50%);}
+h1 {text-align:center;font-size:28px;margin:0 0 10px;color:#ffcc00;text-shadow:2px 2px #000;}
+.todo-input {display:flex;margin-bottom:10px;}
+.todo-input input {flex:1;padding:8px;border:none;border-radius:6px;font-size:16px;}
+.todo-input button {margin-left:10px;padding:8px 12px;background:#333;color:white;border:none;border-radius:6px;cursor:pointer;font-family:'Bungee',cursive;transition:0.2s;}
+.todo-input button:hover {background:#555; transform:translateY(-2px);}
+ul {list-style:none;padding:0;margin:0;flex-grow:1;overflow-y:auto;}
+li {display:flex;flex-direction:column;margin-bottom:12px;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:10px;transition:transform 0.2s, box-shadow 0.2s;}
+li:hover {transform:translateY(-3px);box-shadow:0 4px 8px rgba(0,0,0,0.4);}
+.task-row {display:flex;align-items:center;gap:6px;}
+.ball {width:26px;height:26px;border-radius:50%;margin-right:6px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:black;box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.3); transition:transform 0.2s;position:relative;}
+.ball:hover {transform:scale(1.2);}
+.ball.solid {background:var(--color);}
+.ball.stripe {background:white;position:relative;}
+.ball.stripe::before {content:"";position:absolute;top:5px;left:0;width:100%;height:50%;background:var(--color);border-radius:50%;}
+.ball::after {content:attr(data-number);position:absolute;width:12px;height:12px;border-radius:50%;background:white;display:flex;justify-content:center;align-items:center;font-size:10px;font-weight:bold;top:50%;left:50%;transform:translate(-50%,-50%);}
+.cue{background:white;}
+.task-title {flex:1;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:450px;}
+.note-preview {font-size:12px;color:#ffcc00;margin-left:36px;margin-top:3px;}
+.delete {background:transparent;border:none;font-size:20px;color:white;cursor:pointer;font-weight:bold;transition:transform 0.2s;}
+.delete:hover {transform:scale(1.3);}
+.pin {background:transparent;border:none;cursor:pointer;width:28px;height:28px;flex-shrink:0;transition:transform 0.2s;}
+.pin svg {width:100%;height:100%;fill:white;transition:fill 0.2s;}
+.pin:hover {transform:scale(1.2);}
+.pin.active svg {fill:#ffcc00;}
+.modal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:999;}
+.modal-content {background:#116530;padding:20px;border-radius:15px;width:450px;max-width:90%;display:flex;flex-direction:column;box-shadow:0 0 20px rgba(0,0,0,0.8);border:5px solid #5c3d2e;}
+.modal-content h2 {margin:0 0 15px;color:#ffcc00;text-shadow:1px 1px #000;}
+.modal-schedule {display:flex;flex-direction:column;margin-bottom:10px;}
+.modal-schedule label {margin-bottom:4px;color:#ffcc00;}
+.modal-schedule input {padding:6px;border-radius:6px;border:none;font-size:14px;}
+.modal-editor {background:white;color:black;padding:10px;border-radius:10px;min-height:120px;outline:none;font-family:sans-serif;font-size:14px;overflow-y:auto;}
+.modal-editor a {color:blue;text-decoration:underline;cursor:pointer;}
+.modal-editor a:hover {color:darkblue;}
+.modal-content button {margin-top:12px;padding:8px;background:#333;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'Bungee',cursive;transition:0.2s;}
+.modal-content button:hover {background:#555;}
+.weekday-btns {display:flex;justify-content:space-between;margin-top:5px;margin-bottom:10px;flex-wrap:wrap;}
+.weekday-btn {padding:6px 10px;border-radius:5px;border:none;cursor:pointer;background:#1e1e2e;color:#f0f0f0;font-weight:bold;transition:0.2s;}
+.weekday-btn.active {background:#b03e3e;color:white;}
+.weekday-btn:hover {transform:scale(1.1);box-shadow:0 0 6px #b03e3e;}
+.password-overlay {position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:1000;flex-direction:column;}
+.password-overlay input {padding:10px;font-size:18px;border-radius:6px;border:none;margin-bottom:10px;}
+.password-overlay button {padding:8px 12px;font-size:16px;border-radius:6px;border:none;cursor:pointer;background:#333;color:white;}
+.password-overlay button:hover{background:#555;}
+    ::-webkit-scrollbar { width: 14px; }
+    ::-webkit-scrollbar-track { background: #064e3b; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #ffffff 0%, #ffffff 5%, #d2a679 5%, #d2a679 85%, #000000 85%, #000000 100%);
+      border-radius: 10px;
+      border: 2px solid #064e3b;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, #f2f2f2 0%, #f2f2f2 5%, #e6b877 5%, #e6b877 85%, #1a1a1a 85%, #1a1a1a 100%);
+    }
+</style>
+</head>
+
+<body>
+
+<!-- PASSWORD LOCK -->
+<div id="passwordOverlay" class="password-overlay" style="display:none;">
+  <input type="password" id="passwordInput" placeholder="Enter password">
+  <button onclick="unlock()">Unlock</button>
+</div>
+
+<!-- MAIN TO-DOs -->
+<div class="table">
+  <div class="pocket tl"></div><div class="pocket tr"></div>
+  <div class="pocket bl"></div><div class="pocket br"></div>
+  <div class="pocket ml"></div><div class="pocket mr"></div>
+
+  <h1>🎱 Levi's To-Do 🎱</h1>
+
+  <!-- task input -->
+  <div class="todo-input">
+    <input id="taskInput" type="text" placeholder="Enter task...">
+    <button onclick="addTask()">Add</button>
+  </div>
+  <!-- task list -->
+  <ul id="taskList"></ul>
+</div>
+
+<!-- NOTE MODAL -->
+<div id="noteModal" class="modal">
+  <div class="modal-content">
+    <h2 id="noteTitle"></h2>
+    <div class="modal-schedule">;
+      <!-- schedule picker -->
+      <label for="scheduleInput">📅 Schedule:</label>
+      <input type="text" id="scheduleInput" placeholder="Pick date & time">
+    </div>
+    <div class="weekday-btns">
+      <button class="weekday-btn" data-day="0">Sun</button>
+      <button class="weekday-btn" data-day="1">Mon</button>
+      <button class="weekday-btn" data-day="2">Tue</button>
+      <button class="weekday-btn" data-day="3">Wed</button>
+      <button class="weekday-btn" data-day="4">Thu</button>
+      <button class="weekday-btn" data-day="5">Fri</button>
+      <button class="weekday-btn" data-day="6">Sat</button>
+    </div>
+    <div id="noteEditor" class="modal-editor" contenteditable="true"></div>
+    <button onclick="saveNote()">Save</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+const taskInput=document.getElementById("taskInput");
+const taskList=document.getElementById("taskList");
+const noteModal=document.getElementById("noteModal");
+const noteTitle=document.getElementById("noteTitle");
+const noteEditor=document.getElementById("noteEditor");
+const scheduleInput=document.getElementById("scheduleInput");
+const weekdayBtns=document.querySelectorAll(".weekday-btn");
+const passwordOverlay=document.getElementById("passwordOverlay");
+const passwordInput=document.getElementById("passwordInput");
+
+//== PASSWORD & LOCALSTORAGE KEYS =
+const PASSWORD = "dilaw"; // current password
+const DEVICE_KEY = "deviceUnlocked";
+const PASSWORD_KEY = "savedPassword";
+
+//== PASSWORD MATCH LOGIC =
+if (localStorage.getItem(DEVICE_KEY) !== "true" || localStorage.getItem(PASSWORD_KEY) !== PASSWORD) {
+  passwordOverlay.style.display = "flex";
+}
+
+//== UNLOCK FUNCTION =
+function unlock() {
+  if (passwordInput.value === PASSWORD) {
+    localStorage.setItem(DEVICE_KEY, "true");      // mark unlocked
+    localStorage.setItem(PASSWORD_KEY, PASSWORD);  // save current password
+    passwordOverlay.style.display = "none";
+    passwordInput.value = "";
+  } else alert("Wrong password!");
+}
+
+passwordInput.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    unlock();
+  }
+});
+
+//== FLATPICKR DATE/TIME PICKER ==
+flatpickr("#scheduleInput", {
+  enableTime:true, dateFormat:"Y-m-d H:i", time_24hr:true,
+  defaultDate:"today",
+  onReady: function(selectedDates, dateStr, instance){
+    let fpContainer = instance.calendarContainer;
+    const btnDiv=document.createElement("div");
+    btnDiv.style.display="flex"; btnDiv.style.justifyContent="space-between"; btnDiv.style.marginTop="5px";
+    const todayBtn=document.createElement("button");
+    // today button
+    todayBtn.textContent="Today"; todayBtn.style.flex="1"; todayBtn.style.margin="2px"; todayBtn.style.padding="5px";
+    todayBtn.style.borderRadius="5px"; todayBtn.style.border="none"; todayBtn.style.background="#1e3d2f"; todayBtn.style.color="white"; todayBtn.style.cursor="pointer";
+    todayBtn.onclick=function(){instance.setDate(new Date());};
+    const doneBtn=document.createElement("button");
+    // done button
+    doneBtn.textContent="Done"; doneBtn.style.flex="1"; doneBtn.style.margin="2px"; doneBtn.style.padding="5px";
+    doneBtn.style.borderRadius="5px"; doneBtn.style.border="none"; doneBtn.style.background="#b03e3e"; doneBtn.style.color="white"; doneBtn.style.cursor="pointer";
+    doneBtn.onclick=function(){instance.close();};
+    btnDiv.appendChild(todayBtn); btnDiv.appendChild(doneBtn);
+    fpContainer.appendChild(btnDiv);
+  }
+});
+
+//== LOAD TASKS (LOCALSTORAGE)/INITIALIZE EMPTY ARRAY ==
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[];
+let currentTaskIndex=null;
+
+//== REQ NOTIF PERMISSION ==
+if("Notification" in window && Notification.permission!=="granted") Notification.requestPermission();
+
+//== RENEDERING TASKS ==
+function renderTasks(){
+  taskList.innerHTML="";
+  let sortedTasks=[...tasks].sort((a,b)=> (b.pinned?1:0)-(a.pinned?1:0));
+  sortedTasks.forEach((task,index)=>{
+    let realIndex=tasks.indexOf(task);
+    let li=document.createElement("li");
+    let row=document.createElement("div"); row.classList.add("task-row");
+
+    let ball=document.createElement("div"); ball.classList.add("ball");
+    if(task.done){
+      const number=(index%10)+1;
+      ball.setAttribute("data-number",number);
+      const numberColors={1:'yellow',2:'blue',3:'red',4:'purple',5:'orange',6:'green',7:'maroon',8:'black',9:'yellow',10:'blue'};
+      const color=numberColors[number]; if(number<=8) ball.classList.add('solid'); else ball.classList.add('stripe');
+      ball.style.setProperty('--color',color);
+    } else ball.classList.add("cue");
+    ball.onclick=()=>{tasks[realIndex].done=!tasks[realIndex].done; renderTasks();};
+
+    let span=document.createElement("span"); span.textContent=task.text; span.classList.add("task-title");
+    span.onclick=()=>openNote(realIndex);
+
+    let pin=document.createElement("button"); pin.classList.add("pin");
+    pin.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2L15 8h5l-4 5 1.5 7-5.5-3-5.5 3L8 13 4 8h5z"/></svg>`;
+    if(task.pinned) pin.classList.add("active"); pin.onclick=()=>{tasks[realIndex].pinned=!tasks[realIndex].pinned; renderTasks();};
+
+    let del=document.createElement("button"); del.textContent="×"; del.classList.add("delete");
+    del.onclick=()=>{tasks.splice(realIndex,1); renderTasks();};
+
+    row.appendChild(ball); row.appendChild(span); row.appendChild(pin); row.appendChild(del);
+    li.appendChild(row);
+
+    if(task.schedule){
+      let sched=document.createElement("div"); sched.classList.add("note-preview");
+      let daysText="⏰ "+new Date(task.schedule).toLocaleString();
+      if(task.weekdays && task.weekdays.length > 0){
+        if(task.weekdays.length===7) daysText+=" (DAILY)";
+        else daysText+=" ("+task.weekdays.map(d=>["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d]).join(", ")+")";
+      }
+      sched.textContent=daysText; li.appendChild(sched);
+    }
+    if(task.note && task.note.trim()!==""){
+      let preview=document.createElement("div"); preview.classList.add("note-preview");
+      preview.innerHTML="📓 "+task.note.replace(/<[^>]+>/g,'').slice(0,25)+(task.note.length>25?"...":"");
+      li.appendChild(preview);
+    }
+    taskList.appendChild(li);
+  });
+  localStorage.setItem("tasks",JSON.stringify(tasks)); // save updated tasks
+}
+
+function addTask(){
+  if(taskInput.value.trim()==="") return;
+  tasks.push({text:taskInput.value.trim(),done:false,note:"",schedule:"",pinned:false,weekdays:[]});
+  taskInput.value=""; renderTasks();
+}
+
+//== NOTE MODAL FOR SPECIFIC TASKS ==
+function openNote(i){
+  currentTaskIndex=i;
+  noteTitle.textContent=tasks[i].text;
+  noteEditor.innerHTML=tasks[i].note||"";
+  scheduleInput._flatpickr.setDate(tasks[i].schedule||null);
+  weekdayBtns.forEach(btn=>btn.classList.remove("active"));
+  if(tasks[i].weekdays) tasks[i].weekdays.forEach(d=>document.querySelector(`.weekday-btn[data-day='${d}']`).classList.add("active"));
+  noteModal.style.display="flex";
+}
+
+weekdayBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    btn.classList.toggle("active"); // toggles the 'active' class
+
+    if (btn.classList.contains("active")) {
+      btn.style.background = "#b03e3e"; // active color
+      btn.style.color = "white";
+    } else {
+      btn.style.background = "#1e1e2e"; // inactive color
+      btn.style.color = "#f0f0f0";
+    }
+  });
+});
+
+//== SAVE NOTE CHANGES ==
+function saveNote(){
+  if(currentTaskIndex!==null){
+    tasks[currentTaskIndex].note=noteEditor.innerHTML;
+    tasks[currentTaskIndex].schedule=scheduleInput.value;
+    tasks[currentTaskIndex].weekdays=Array.from(weekdayBtns).filter(b=>b.classList.contains("active")).map(b=>Number(b.dataset.day));
+    localStorage.setItem("tasks",JSON.stringify(tasks));
+    scheduleNotification(currentTaskIndex);
+  }
+  noteModal.style.display="none"; renderTasks();
+}
+
+noteModal.addEventListener("click",e=>{if(e.target===noteModal) noteModal.style.display="none";});
+taskInput.addEventListener("keypress",e=>{if(e.key==="Enter") addTask();});
+
+// NOTIFS
+function scheduleNotification(index){
+  const task=tasks[index]; if(!task.schedule) return;
+  const taskTime=new Date(task.schedule); const now=new Date();
+  let delay=taskTime-now; if(delay<0) delay=0;
+  setTimeout(function notifyTask(){
+    const today=new Date().getDay();
+    if(!task.weekdays || task.weekdays.includes(today) || task.weekdays.length===0){
+      if(Notification.permission==="granted") new Notification("Task Reminder",{body:task.text});
+    }
+    setTimeout(notifyTask,24*60*60*1000);
+  }, delay);
+}
+
+tasks.forEach((_,i)=>scheduleNotification(i));
+renderTasks();
+</script>
+
+</body>
+
+</html>
