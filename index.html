@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Levi's To-Do List</title>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -84,23 +85,14 @@ li:hover {transform:translateY(-3px);box-shadow:0 4px 8px rgba(0,0,0,0.4);}
     }
 /* FOR MOBILE */
 @media (max-width: 480px) {
-  body {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 10px;
-  }
-
   .table {
-    width: 90vw;
-    max-width: 320px;
-    height: 80vh;
-    border: 16px solid #5c3d2e;
-    padding: 12px;
-    overflow-y: auto;
+    overflow: hidden;
   }
-
+  ul {
+    flex-grow: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   h1 { font-size: 24px; }
   .ball { width: 36px; height: 36px; font-size: 14px; }
   .pin { width: 30px; height: 30px; }
